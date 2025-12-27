@@ -1389,6 +1389,8 @@ impl From<AVCodecID> for Id {
             AV_CODEC_ID_G728 => Id::G728,
             #[cfg(feature = "ffmpeg_8_0")]
             AV_CODEC_ID_IVTV_VBI => Id::IVTV_VBI,
+            #[cfg(target_os = "android")]
+            _ => Id::None,
         }
     }
 }

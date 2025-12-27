@@ -72,13 +72,21 @@ pub enum Type {
 
     #[cfg(feature = "ffmpeg_8_0")]
     THREE_D_REFERENCE_DISPLAYS,
+
+    #[cfg(target_os = "android")]
+    Unknown(AVFrameSideDataType),
 }
 
 impl Type {
     #[inline]
     pub fn name(&self) -> &'static str {
         unsafe {
-            from_utf8_unchecked(CStr::from_ptr(av_frame_side_data_name((*self).into())).to_bytes())
+            let ptr = av_frame_side_data_name((*self).into());
+            if ptr.is_null() {
+                "unknown"
+            } else {
+                from_utf8_unchecked(CStr::from_ptr(ptr).to_bytes())
+            }
         }
     }
 }
@@ -148,6 +156,8 @@ impl From<AVFrameSideDataType> for Type {
 
             #[cfg(feature = "ffmpeg_8_0")]
             AV_FRAME_DATA_3D_REFERENCE_DISPLAYS => Type::THREE_D_REFERENCE_DISPLAYS,
+            #[cfg(target_os = "android")]
+            _ => Type::Unknown(value),
         }
     }
 }
@@ -217,6 +227,8 @@ impl From<Type> for AVFrameSideDataType {
 
             #[cfg(feature = "ffmpeg_8_0")]
             Type::THREE_D_REFERENCE_DISPLAYS => AV_FRAME_DATA_3D_REFERENCE_DISPLAYS,
+            #[cfg(target_os = "android")]
+            Type::Unknown(value) => value,
         }
     }
 }
